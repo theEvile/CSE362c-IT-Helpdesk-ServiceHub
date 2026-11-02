@@ -1,56 +1,46 @@
 # Campus IT Helpdesk ServiceHub
 
-MSA University · CSE362c / CSE5531 · Fall 2026
+MSA University · CSE362c/CSE5531 · Fall 2026
 
-Starter application for the team project. This is **not the complete course submission**.
-
-## User journeys
-
-- **J1 (starter):** Search and filter public support articles stored in SQLite.
-- **J2 (starter):** Submit an IT ticket; Flask validates it and persists it in SQLite.
-- **J3 (planned, not implemented):** An authenticated IT administrator reviews tickets, updates ticket status, and performs authorized CRUD actions.
+Small local course application. J1 browse public IT articles, J2 submit persisted tickets, J3 administrator review and status updates. This is not an Internet-deployed service.
 
 ## Stack
-Python 3.10+, Flask, SQLite, HTML/CSS, vanilla JavaScript and pytest.
+Python 3.10+, Flask, SQLite, HTML/CSS/vanilla JavaScript, pytest and GitHub Actions.
 
-## Run locally
-Run these commands from the repository root:
+## Windows setup (PowerShell)
+1. python -m venv .venv
+2. .venv\Scripts\Activate.ps1
+3. python -m pip install -r requirements.txt
+4. flask --app helpdesk init-db
+5. flask --app helpdesk create-admin --username itadmin
+6. flask --app helpdesk run --debug
 
-1. Create a virtual environment: python -m venv .venv
-2. Activate it: .venv\Scripts\Activate.ps1 (PowerShell), or source .venv/bin/activate (Linux/macOS)
-3. Install requirements: python -m pip install -r requirements.txt
-4. Initialize the database: flask --app helpdesk init-db
-5. Start development server: flask --app helpdesk run --debug
-6. Open http://127.0.0.1:5000
+Step 5 asks for a password (12-128 characters). Never put it in Git or the terminal command arguments. There is no default administrator and no web admin registration.
 
-The local SQLite database lives under instance/ and is excluded from Git. Running init-db again preserves existing tickets.
+Open the student portal at http://127.0.0.1:5000/ and the staff interface at http://127.0.0.1:5000/admin.
+
+For Linux/macOS, activate with: source .venv/bin/activate
 
 Run tests: python -m pytest -q
 
-## Starter API
+## Journeys
+- J1: GET /api/articles?q=...&category=... to browse IT support articles.
+- J2: POST /api/tickets to validate and create an SQLite ticket, returning HTTP 201.
+- J3: Log in from /admin, GET /api/tickets and GET /api/tickets/<id>, PATCH status and DELETE resolved tickets.
 
-| Method | Endpoint | Status |
-| --- | --- | --- |
-| GET | /api/health | Implemented |
-| GET | /api/articles?q=&category= | Implemented |
-| POST | /api/tickets | Implemented |
-| POST | /api/admin/login | Planned |
-| GET | /api/tickets | Planned |
-| PATCH | /api/tickets/<id> | Planned |
-| DELETE | /api/tickets/<id> | Planned |
+## Admin API
+- GET /api/admin/session: authentication status and CSRF token.
+- POST /api/admin/login: JSON username/password and X-CSRF-Token header.
+- POST /api/admin/logout: session and X-CSRF-Token required.
+- GET /api/tickets?status=: staff only (contains private contact emails).
+- GET /api/tickets/<id>: staff only.
+- PATCH /api/tickets/<id>: staff, CSRF, JSON {"status":"IN_PROGRESS"}.
+- DELETE /api/tickets/<id>: staff, CSRF, resolved tickets only.
 
-Submit tickets as JSON with title (5–120 chars), description (10–2000 chars), category (wifi, hardware, software, account), and contact_email.
+Workflow: OPEN -> IN_PROGRESS -> RESOLVED (or OPEN -> RESOLVED). Resolved tickets cannot reopen; backward transitions get HTTP 409. Missing credentials get 401; missing/invalid CSRF 403; invalid data 400; missing ticket 404.
 
-## Repository map
+## Security and persistence
+Admin password hashes use Werkzeug. The Flask session signing key is generated once in instance/.session_secret with private permissions and survives restarts. The instance directory is excluded from Git. Alternatively provide HELPDESK_SECRET_KEY (32+ characters) via environment. Cookies are HttpOnly and SameSite=Lax. All staff ticket routes verify a live admin record server-side. Signed-in browser sends X-CSRF-Token on mutations. Parameterized SQL and DOM textContent avoid SQL/HTML injection. Security headers include CSP and no-cache for private APIs.
 
-- helpdesk/: Flask factory, SQLite, schema, frontend.
-- tests/: Starter API and database tests.
-- docs/: Architecture and project constraints.
-- evidence/: Intended folders for real verification evidence.
-- .github/workflows/tests.yml: Runs tests for commits and PRs.
-
-## Required work before final submission
-
-Implement authentication with hashed passwords and session/CSRF protection; finish authorized J3 and CRUD; verify persistent storage across restarts; demonstrate security and business-rule tests; collect genuine diagnosis and regression evidence; complete report and presentation.
-
-Development mode is local-only. Do not commit real passwords, private tickets or any production credentials.
+## Limitations
+Local demonstration only. For deployment, add HTTPS and Secure cookies, login rate limiting, operator monitoring and admin audit logs. Genuine diagnosis evidence, mobile/accessibility/compatibility testing, final report, presentation and final release tag remain future milestone work. Never commit secrets or real student ticket data.

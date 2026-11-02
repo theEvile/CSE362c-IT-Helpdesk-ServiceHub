@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Campus IT ticket management for administrators">
+  <title>IT Helpdesk Administration</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='admin.js') }}"></script>
+</head>
+<body>
+  <header class="site-header"><div class="container">
+    <p class="eyebrow">MSA University · Campus IT</p>
+    <h1>Ticket administration</h1>
+    <p><a class="staff-link" href="/">Return to student portal</a></p>
+  </div></header>
+  <main class="container staff-layout">
+    <section id="login-section" class="panel" aria-labelledby="login-heading">
+      <h2 id="login-heading">Administrator sign in</h2>
+      <form id="login-form">
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password" autocomplete="current-password" required>
+        <button type="submit">Sign in</button>
+      </form>
+    </section>
+    <section id="tickets-section" class="panel" aria-labelledby="tickets-heading" hidden>
+      <div class="staff-heading">
+        <h2 id="tickets-heading">IT support tickets</h2>
+        <button type="button" id="logout">Sign out</button>
+      </div>
+      <p id="admin-name"></p>
+      <label for="status-filter">Filter tickets by status</label>
+      <select id="status-filter">
+        <option value="">All statuses</option>
+        <option value="OPEN">Open</option>
+        <option value="IN_PROGRESS">In progress</option>
+        <option value="RESOLVED">Resolved</option>
+      </select>
+      <ul id="tickets" class="article-list"></ul>
+    </section>
+    <p id="admin-status" role="status" aria-live="polite">Checking session…</p>
+  </main>
+</body>
+</html>

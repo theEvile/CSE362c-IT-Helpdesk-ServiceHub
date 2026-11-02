@@ -1,9 +1,10 @@
-"""Campus IT Helpdesk starter: public knowledge base and ticket submission."""
-
+"""Campus IT Helpdesk app with public J1/J2 and authenticated J3."""
 import re
 from pathlib import Path
 from flask import Flask, jsonify, render_template, request
+
 from .db import get_db, init_app
+from .security import local_secret
 
 CATEGORIES = {"wifi", "hardware", "software", "account"}
 EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
@@ -13,11 +14,33 @@ def create_app(test_config=None):
     app.config.from_mapping(
         DATABASE=str(Path(app.instance_path) / "helpdesk.sqlite3"),
         JSON_SORT_KEYS=False,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=False,  # Local HTTP only; enable under HTTPS
+        MAX_CONTENT_LENGTH=16384,
     )
     if test_config is not None:
         app.config.update(test_config)
     Path(app.config["DATABASE"]).parent.mkdir(parents=True, exist_ok=True)
+    if not app.config.get("SECRET_KEY"):
+        app.config["SECRET_KEY"] = local_secret(app.instance_path)
     init_app(app)
+    from .admin import bp as admin_blueprint, create_admin_command
+    app.register_blueprint(admin_blueprint)
+    app.cli.add_command(create_admin_command)
+
+    @app.after_request
+    def security_headers(response):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "same-origin"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self'; "
+            "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+        )
+        if request.path.startswith("/api/admin/") or request.path.startswith("/api/tickets"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
 
     @app.get("/")
     def home():
@@ -60,20 +83,20 @@ def create_app(test_config=None):
         category = payload["category"].strip().lower()
         email = payload["contact_email"].strip()
         if not 5 <= len(title) <= 120:
-            return jsonify({"error": "Title must contain 5–120 characters."}), 400
+            return jsonify({"error": "Title must contain 5-120 characters."}), 400
         if not 10 <= len(description) <= 2000:
-            return jsonify({"error": "Description must contain 10–2000 characters."}), 400
+            return jsonify({"error": "Description must contain 10-2000 characters."}), 400
         if category not in CATEGORIES:
             return jsonify({"error": "Unknown ticket category."}), 400
         if len(email) > 254 or EMAIL_PATTERN.fullmatch(email) is None:
             return jsonify({"error": "Provide a valid contact email."}), 400
         db = get_db()
-        cursor = db.execute(
+        row = db.execute(
             """INSERT INTO tickets (title, description, category, contact_email)
                VALUES (?, ?, ?, ?)""",
             (title, description, category, email),
         )
         db.commit()
-        return jsonify({"ticket": {"id": cursor.lastrowid, "status": "OPEN"}}), 201
+        return jsonify({"ticket": {"id": row.lastrowid, "status": "OPEN"}}), 201
 
     return app
