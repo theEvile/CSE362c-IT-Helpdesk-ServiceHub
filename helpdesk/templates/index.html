@@ -9,13 +9,12 @@
   <script defer src="{{ url_for('static', filename='app.js') }}"></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container">
-      <p class="eyebrow">MSA University · CSE362c / CSE5531</p>
-      <h1>Campus IT Helpdesk</h1>
-      <p>Find help for common issues or open a support request.</p>
-    </div>
-  </header>
+  <header class="site-header"><div class="container">
+    <p class="eyebrow">MSA University · CSE362c / CSE5531</p>
+    <h1>Campus IT Helpdesk</h1>
+    <p>Find help for common issues or open a support request.</p>
+    <p><a class="staff-link" href="{{ url_for('admin.admin_page') }}">IT staff administration</a></p>
+  </div></header>
   <main class="container layout">
     <section aria-labelledby="articles-heading" class="panel">
       <h2 id="articles-heading">Find a solution</h2>
@@ -56,6 +55,6 @@
       </form>
     </section>
   </main>
-  <footer class="container"><p>Course prototype · Administration workflow planned for the next milestone.</p></footer>
+  <footer class="container"><p>Course prototype · Administrator access is restricted to IT staff.</p></footer>
 </body>
 </html>

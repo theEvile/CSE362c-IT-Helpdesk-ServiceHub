@@ -6,6 +6,7 @@ from helpdesk.db import init_db
 def app(tmp_path):
     application = create_app({
         "TESTING": True,
+        "SECRET_KEY": "unit-test-key-not-for-production",
         "DATABASE": str(tmp_path / "helpdesk-test.sqlite3"),
     })
     with application.app_context():
