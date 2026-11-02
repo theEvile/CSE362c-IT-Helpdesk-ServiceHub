@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Campus IT Helpdesk support information and ticket submissions">
+  <title>Campus IT Helpdesk ServiceHub</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <p class="eyebrow">MSA University · CSE362c / CSE5531</p>
+      <h1>Campus IT Helpdesk</h1>
+      <p>Find help for common issues or open a support request.</p>
+    </div>
+  </header>
+  <main class="container layout">
+    <section aria-labelledby="articles-heading" class="panel">
+      <h2 id="articles-heading">Find a solution</h2>
+      <div class="filters">
+        <label for="search">Search support articles</label>
+        <input id="search" type="search" placeholder="Example: Wi-Fi" maxlength="100">
+        <label for="article-category">Category</label>
+        <select id="article-category">
+          <option value="">All categories</option>
+          <option value="wifi">Wi-Fi</option>
+          <option value="hardware">Hardware</option>
+          <option value="software">Software</option>
+          <option value="account">Account</option>
+        </select>
+      </div>
+      <p id="articles-status" role="status" aria-live="polite">Loading articles…</p>
+      <ul id="articles" class="article-list"></ul>
+    </section>
+    <section aria-labelledby="ticket-heading" class="panel">
+      <h2 id="ticket-heading">Submit an IT support ticket</h2>
+      <form id="ticket-form">
+        <label for="title">Issue title</label>
+        <input id="title" name="title" required minlength="5" maxlength="120">
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+          <option value="">Choose a category</option>
+          <option value="wifi">Wi-Fi</option>
+          <option value="hardware">Hardware</option>
+          <option value="software">Software</option>
+          <option value="account">Account</option>
+        </select>
+        <label for="email">University contact email</label>
+        <input id="email" name="contact_email" type="email" autocomplete="email" maxlength="254" required>
+        <label for="description">Issue description</label>
+        <textarea id="description" name="description" required minlength="10" maxlength="2000" rows="5"></textarea>
+        <button type="submit">Submit ticket</button>
+        <p id="ticket-status" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+  <footer class="container"><p>Course prototype · Administration workflow planned for the next milestone.</p></footer>
+</body>
+</html>
